@@ -1,6 +1,6 @@
 # motif-mark
 
-## A Tool for Motif Annotation
+## a tool for motif annotation
 
 ### Current Functionality
 
