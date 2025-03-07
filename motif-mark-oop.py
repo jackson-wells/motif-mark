@@ -5,16 +5,34 @@ import os
 import cairo
 import re
 
+#Constant list of colors 
 COLORS = [
-    (31/255, 119/255, 180/255, 0.75),  # Blue
-    (255/255, 127/255, 14/255, 0.75),  # Orange
-    (44/255, 160/255, 44/255, 0.75),   # Green
-    (214/255, 39/255, 40/255, 0.75),   # Red
-    (148/255, 103/255, 189/255, 0.75), # Purple
-    (140/255, 86/255, 75/255, 0.75),   # Brown
-    (227/255, 119/255, 194/255, 0.75), # Pink
-    (188/255, 189/255, 34/255, 0.75),  # Yellow-green
-    (23/255, 190/255, 207/255, 0.75)   # Cyan
+	#Blue
+    (31/255, 119/255, 180/255, 0.75),  
+
+	#Orange
+    (255/255, 127/255, 14/255, 0.75),
+
+	#Green  
+    (44/255, 160/255, 44/255, 0.75),
+
+	#Red   
+    (214/255, 39/255, 40/255, 0.75), 
+
+	#Purple  
+    (148/255, 103/255, 189/255, 0.75), 
+
+	#Brown
+    (140/255, 86/255, 75/255, 0.75),   
+
+	#Pink
+    (227/255, 119/255, 194/255, 0.75), 
+
+	#Puke green
+    (188/255, 189/255, 34/255, 0.75),  
+
+	#Cyan
+    (23/255, 190/255, 207/255, 0.75)  
 ]
 
 class File:
@@ -26,12 +44,15 @@ class File:
 		self.path = self._setPath()
 		
 	def _setName(self):
+		'''Extract file name from provided input file'''
 		return os.path.splitext(self.file)[0]
 	
 	def _setExtension(self):
+		'''Extract file extension from provided input file'''
 		return os.path.splitext(self.file)[1]
 	
 	def _setPath(self):
+		'''Extract file path from provided input file'''
 		return os.path.dirname(self.file)
 
 class Fasta(File):
@@ -41,9 +62,11 @@ class Fasta(File):
 		self.sequences = self._setSequences()
 
 	def getSequenceCount(self):
+		'''Gets number of sequences in the FASTA file'''
 		return len(self.sequences)
 
 	def _setSequences(self):
+		'''Reads FASTA file and adds contents to list of sequence class objects'''
 		tempList = list()
 		tempObject = None
 		with open(self.file,"r") as fh:
@@ -68,6 +91,7 @@ class Motif(File):
 		self.motifs = self._setMotifs()
 
 	def _setMotifs(self):
+		'''Reads motif file and adds contents to list of strings'''
 		tempList = list()
 		with open(self.file,"r") as fh:
 			for line in fh:
@@ -75,6 +99,7 @@ class Motif(File):
 		return tempList
 	
 	def getMotifs(self):
+		'''returns list of motifs'''
 		return self.motifs
 
 class Sequence:
@@ -88,16 +113,20 @@ class Sequence:
 		self.motifs = list()
 
 	def setGene(self):
+		'''Extracts gene name from sequence header'''
 		temp = self.header.split(' ')[0]
 		self.gene = temp[1:]
 
 	def setBody(self, body):
+		'''Updates sequence body according to single string'''
 		self.body = body
 	
 	def buildBody(self, sequence):
+		'''Updates sequence body by concatentation'''
 		self.body += sequence
 	
 	def setHeader(self, header):
+		'''Updates sequence header'''
 		self.header = header
 
 	def findExons(self):
@@ -166,10 +195,11 @@ class Atrribute:
 		self.occurences = 0
 
 	def setOccurrences(self, temp):
+		'''Updates occurence count (for motifs)'''
 		self.occurences = temp
-		return
-
+		
 class Draw:
+	'''Contains necessary components for drawing annotated sequences'''
 	def __init__(self, width, height):
 		self.width = width
 		self.height = height
@@ -177,80 +207,100 @@ class Draw:
 		self.ctx = cairo.Context(self.surface)
 
 	def createCanvas(self):
+		'''creates image canvas'''
 		self.ctx.set_source_rgb(1, 1, 1)  
 		self.ctx.paint()
 
 	def drawImageTitle(self):
-		# # Draw a title
-		self.ctx.set_source_rgb(0, 0, 0)  # Black text
+		'''Adds main title to image'''
+		self.ctx.set_source_rgb(0, 0, 0)
 		self.ctx.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
 		self.ctx.set_font_size(32)
 
-		# # Get text extenats for centering
+		#Get text extenats for centering
 		title = "Sequence Annotations"
 		extents = self.ctx.text_extents(title)
-		self.x = (self.width - extents.width) / 2  # Center horizontally
+		#Center title horizontally
+		self.x = (self.width - extents.width) / 2  
 		self.ctx.move_to(self.x, 40)
 		self.ctx.show_text(title) 
 
 	def drawLegend(self, input_motifs):
+		'''Adds legend to image according to provided motifs'''
 		for i,motif in enumerate(input_motifs.motifs):
-			self.y = 30 + i * 25  # Adjust vertical position for each entry
+			#move curson for each motif in legend
+			self.y = 30 + i * 25  
 
-			# Draw color square
+			#Add color square corresponding to motif
 			self.ctx.set_source_rgba(*COLORS[i])
 			self.ctx.rectangle(1000, self.y, 20, 20)
 			self.ctx.fill()
 
-			# Draw label text
-			self.ctx.set_source_rgb(0, 0, 0)  # Black text
+			#Add motif sequence 
+			self.ctx.set_source_rgb(0, 0, 0) 
 			self.ctx.set_font_size(16)
-			self.ctx.move_to(1000 + 25, self.y + 20 - 5)  # Align text with square
+			#Align text with square
+			self.ctx.move_to(1000 + 25, self.y + 20 - 5)  
 			self.ctx.show_text(motif)
 
 	def drawSequenceTitle(self, sequence):
+		'''Adds sequnce title according to gene name in FASTA file'''
 		self.ctx.move_to(self.x, self.y)
-		self.ctx.set_source_rgb(0, 0, 0)  # Black text
+		self.ctx.set_source_rgb(0, 0, 0) 
 		self.ctx.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
 		self.ctx.set_font_size(24)
 		tempTitle = "Gene: " + sequence.gene
 		self.ctx.show_text(tempTitle)
+		#move down for sequence drawing 
 		self.y += 50
 		self.ctx.move_to(self.x, self.y)
 
 	def alignMargin(self):
+		'''aligns curson to write to draw sequences'''
 		self.x = 50
 		self.y = 150
 
 	def nextAnnotation(self):
+		'''moves curson down to draw next sequence'''
 		self.y += 100
 
 	def drawIntrons(self, sequence):
+		'''Add introns by location on provide sequence'''
 		for i,intron in enumerate(sequence.introns):
-			self.ctx.set_source_rgb(90/255, 90/255, 90/255) 
+			self.ctx.set_source_rgb(90/255, 90/255, 90/255) #dark grey
 			self.ctx.line_to(self.x + intron.start + intron.length, self.y)
 			self.ctx.stroke()
+			#move curson to after the exon that follows the current intron
 			self.ctx.move_to(self.x + intron.start + intron.length + sequence.exons[i-1].length, self.y)
 
 	def drawExons(self, sequence):
+		'''Add exons by location on provide sequence'''
+		#loop over identified exons in given sequence 
 		for exon in sequence.exons:
-			# ctx.line_to(intron.start, intron.stop)
 			self.ctx.rectangle(self.x + exon.start, self.y-10, exon.length, 20)
-			self.ctx.set_source_rgb(90/255, 90/255, 90/255) 
+			self.ctx.set_source_rgb(90/255, 90/255, 90/255) #dark grey
 			self.ctx.fill()
 			self.ctx.stroke()
+			#reset curson to start of sequence
 			self.ctx.move_to(50, 50)
 
 	def drawMotifs(self, sequence):
+		'''Annotate identifed motifs on provided sequence'''
+		#Loop over motifs identifed to be present in sequence
 		for i,motif in enumerate(sequence.motifs):
+			#Loop over occurences of given motif
 			for start in motif.start:
+				#annotate motif using start position 
 				self.ctx.rectangle(self.x + start, self.y-10, motif.length, 20)
+				#Iteratively change color to delineate motifs
 				self.ctx.set_source_rgba(*COLORS[i]) 
 				self.ctx.fill()
 				self.ctx.stroke()
+				#reset curson to start of sequence
 				self.ctx.move_to(50, 50)
 	
 	def outputImage(self, fileName):
+		'''Output image according to provided filename'''
 		self.surface.write_to_png(fileName)
 
 def get_args():
@@ -268,14 +318,15 @@ def findAttributes(input_fasta, input_motifs):
 	return
 
 def annotate(input_fasta, input_motifs):
-
+	'''Creates and outputs image containing annotated FASTA sequences'''
 	image = Draw(1200, (175*input_fasta.getSequenceCount()))
-
 	image.createCanvas()
+
 	image.drawImageTitle()
 	image.drawLegend(input_motifs)
 	image.alignMargin()
 
+	#Loop over annotated sequences 
 	for sequence in input_fasta.sequences:
 		image.drawSequenceTitle(sequence)
 		image.drawIntrons(sequence)
@@ -290,16 +341,16 @@ def annotate(input_fasta, input_motifs):
 def main():
 	args = get_args()
 
-	#get motifs from file
-	input_motifs = Motif(args.motif) # type: ignore
+	#Get motifs from file
+	input_motifs = Motif(args.motif)
 
-	#get FASTA sequences and headers from file
-	input_fasta = Fasta(args.file) # type: ignore
+	#Get FASTA sequences and headers from file
+	input_fasta = Fasta(args.file) 
 
 	#Find attributes (exons, introns, motifs) in each FASTA sequence 
 	findAttributes(input_fasta, input_motifs)
 
-	#draw sequeneces with attributes 
+	#Draw sequeneces with attributes 
 	annotate(input_fasta, input_motifs)
 
 if __name__ == "__main__":
