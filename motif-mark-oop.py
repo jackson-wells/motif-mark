@@ -218,7 +218,7 @@ class Draw:
 		self.y += 50
 		self.ctx.move_to(self.x, self.y)
 
-	def align(self):
+	def alignMargin(self):
 		self.x = 50
 		self.y = 150
 
@@ -274,7 +274,7 @@ def annotate(input_fasta, input_motifs):
 	image.createCanvas()
 	image.drawImageTitle()
 	image.drawLegend(input_motifs)
-	image.align()
+	image.alignMargin()
 
 	for sequence in input_fasta.sequences:
 		image.drawSequenceTitle(sequence)
