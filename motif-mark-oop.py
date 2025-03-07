@@ -345,6 +345,8 @@ def findAttributes(input_fasta, input_motifs):
 
 def annotate(input_fasta, input_motifs):
 	'''Creates and outputs image containing annotated FASTA sequences'''
+	#width allows space for legend to not overlap with sequences
+	#height scales according to number of sequences in input FASTA file
 	image = Draw(1200, (175*input_fasta.getSequenceCount()))
 	image.createCanvas()
 
