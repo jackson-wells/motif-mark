@@ -71,13 +71,17 @@ class Fasta(File):
 		tempObject = None
 		with open(self.file,"r") as fh:
 			for line in fh:
+				#If line is the header line
 				if not line.find(">"):  
+					#If this a new header line, add object to list
 					if tempObject is not None:
 						tempList.append(tempObject)
 					tempObject = Sequence("","")
 					tempObject.setHeader(line.strip('\n'))
 					tempObject.setGene()
-				else:     
+				#If line is not header line
+				else:
+					#Check that object exists (catches invalid FASTA formatting (kind of))
 					if tempObject is not None:                      
 						tempObject.buildBody(line.strip('\n'))
 			if tempObject is not None:
@@ -134,16 +138,24 @@ class Sequence:
 		tempList = list()
 		temp = ""
 		tempStart = 0
+		#Loop over every character in sequence
 		for i, character in enumerate(self.body):
+			#If an Exon is detected
 			if character.isupper():
+				#Start of an exon
 				if temp == "":
+					#record start location
 					tempStart = i
+				#Build exon string
 				temp += character
+			#If lowercase/ end of exon
 			elif temp:
-				tempList.append(Atrribute(temp,len(temp),tempStart,i-1))
+				#add exon to list
+				tempList.append(Atrribute(temp,len(temp),tempStart,tempStart+len(temp)))
+				#reset exon string
 				temp = ""
 		if temp:
-			tempList.append(Atrribute(temp,len(temp),tempStart,i-1))
+			tempList.append(Atrribute(temp,len(temp),tempStart,tempStart+len(temp)))
 		return tempList
 	
 	def findIntrons(self):
@@ -151,34 +163,48 @@ class Sequence:
 		tempList = list()
 		temp = ""
 		tempStart = 0
+		#Loop over every character in sequence
 		for i, character in enumerate(self.body):
+			#if intron is detected
 			if character.islower():
+				#start of intron
 				if temp == "":
+					#record start location
 					tempStart = i
+				#build intron string
 				temp += character
+			#If uppercase/ end of intron
 			elif temp:
-				tempList.append(Atrribute(temp,len(temp),tempStart,i-1))
+				#add intron to list
+				tempList.append(Atrribute(temp,len(temp),tempStart,tempStart+len(temp)))
+				#reset intron string
 				temp = ""
-
 		if temp:
-			tempList.append(Atrribute(temp,len(temp),tempStart,i-1))
+			tempList.append(Atrribute(temp,len(temp),tempStart,tempStart+len(temp)))
 		return tempList
 	
 	def findMotifs(self, motifs):
 		'''Identifies and stores any motifs, from the input motif file, found within provided sequence'''
+		#create temporary lowercase sequence, replacing any U with T
 		tempSequence = self.body.lower().replace('u', 't')
 		tempList = list()
+		#Loop over input motifs 
 		for motif in motifs:
 			startPositions = list()
 			stopPositions = list()
 			tempCount = 0
+			#create temporary lowercase motif, replacing any U with T
 			tempMotif = motif.lower().replace('u', 't')
+			#Update any Y's to regex for T or C
 			tempMotif = tempMotif.replace('y', '[tc]')
 			pattern = re.compile(tempMotif)
+			#Loop over identified occurences of motif in sequence
 			for match in re.finditer(pattern, tempSequence):
+				#Add start/stop positions to temp lists
 				startPositions.append(match.start())
-				stopPositions.append(match.start() + len(motif) - 1)
+				stopPositions.append(match.start() + len(motif))
 				tempCount += 1
+			#If motif was found in sequence 
 			if len(startPositions) > 0:
 				tempAttribute = Atrribute(motif,len(motif),startPositions,stopPositions)
 				tempAttribute.setOccurrences(tempCount)
