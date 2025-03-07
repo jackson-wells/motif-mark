@@ -10,8 +10,13 @@
 ### To Run:
 
 1. Create conda environment from provided yaml file
+
      `conda env create -f env/my_pycairo.yml`
+   
 2. Activate the conda environment
+
      `conda activate my_pycairo`
+   
 3. Run the script
+
      `python motif-mark-oop.py -f <FASTA file> -m <Motif file>`  
