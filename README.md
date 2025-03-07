@@ -2,12 +2,18 @@
 
 ## A Tool for Motif Annotation
 
-### Tool Takes In:
+### Tool Takes In
 
 - FASTA file
 - Text file containg motifs to be annotated
 
-### To Run:
+### Current Functionality
+
+1. Takes in input files 
+2. Finds exons, introns, and motifs within the provided FASTA sequences
+3. Creates an image containing a visual representation of the annotated FASTA sequences  
+
+### To Run
 
 1. Create conda environment from provided yaml file
 
